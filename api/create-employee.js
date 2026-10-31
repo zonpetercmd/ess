@@ -1,5 +1,7 @@
+// api/create-employee.js
 const admin = require('firebase-admin');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 function initFirebase() {
   if (admin.apps.length > 0) return;
@@ -20,28 +22,41 @@ module.exports = async (req, res) => {
   try {
     initFirebase();
     const db = admin.database();
-    
-    const { name, email, password, designation, basicSalary } = req.body;
 
+    // ✅ 1. Verify Admin Token (Security Check)
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized: Missing token' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    const secret = process.env.JWT_SECRET || 'secret_key_123';
+    
+    try {
+      const decoded = jwt.verify(token, secret);
+      // चूँकि हमारे पोर्टल में एडमिन का रोल 'Admin' या 'Staff' हो सकता है, 
+      // हम सिर्फ टोकन की वैलिडिटी चेक कर रहे हैं।
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+
+    // 2. Get Data
+    const { name, email, password, designation, basicSalary } = req.body;
     if (!name || !email || !password || !basicSalary) {
       return res.status(400).json({ error: 'All fields required' });
     }
 
-    // Check if email already exists
+    // 3. Check if Email Exists
     const existing = await db.ref('employees').orderByChild('email').equalTo(email).once('value');
     if (existing.exists()) return res.status(400).json({ error: 'Email already exists' });
 
-    // Hash Password
+    // 4. Hash Password & Save
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
-
-    // Generate Unique Employee ID (using Firebase push key)
     const newRef = db.ref('employees').push();
-    const uid = newRef.key;
 
-    // Save to Firebase
     await newRef.set({
-      uid: uid,
+      uid: newRef.key,
       name, 
       email, 
       designation: designation || 'Staff', 
