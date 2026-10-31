@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Salary Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h2 style="font-weight: 800; font-size: 20px;">D E V विद्यालय</h2>
+        <div>
+            <span id="staff_name" style="font-weight: 600; margin-right: 15px;">Loading...</span>
+            <button onclick="logout()" class="btn-action btn-red">Logout</button>
+        </div>
+    </header>
 
+    <div class="container">
+        <div class="card" style="background: linear-gradient(135deg, #e0e7ff, #ffffff); border: none;">
+            <h3 style="margin-bottom: 5px;">Welcome back, <span id="welcome_name"></span> 👋</h3>
+            <p style="color: var(--text-muted);">Here you can view your monthly salary and download pay slips.</p>
+        </div>
+
+        <div class="card">
+            <h4 style="margin-bottom: 10px;">📅 Salary History</h4>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Basic Salary</th>
+                            <th>Allowances</th>
+                            <th>Deductions</th>
+                            <th>Net Salary</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salary_list">
+                        <tr><td colspan="7" style="text-align:center;">Loading records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="config/firebase-config.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
