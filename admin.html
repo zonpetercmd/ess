@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Employee Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h2 style="font-size: 20px;">Admin Portal</h2>
+        <a href="index.html" style="text-decoration: none; color: #ef4444; font-weight: 600;">Back to Login</a>
+    </header>
 
+    <div class="container">
+        <!-- Add Employee -->
+        <div class="card">
+            <h3>➕ Add New Employee</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <input type="text" id="emp_name" placeholder="Full Name" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="email" id="emp_email" placeholder="Email ID" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="text" id="emp_pass" placeholder="Login Password" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="text" id="emp_desig" placeholder="Designation (e.g., Teacher)" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="number" id="emp_basic" placeholder="Basic Salary (₹)" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <button onclick="addEmployee()" class="btn-login" style="padding:10px;">Create Employee</button>
+            </div>
+        </div>
+
+        <!-- Generate Salary -->
+        <div class="card">
+            <h3>💰 Generate Salary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <select id="sal_emp" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                    <option value="">Select Employee</option>
+                </select>
+                <input type="month" id="sal_month" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="number" id="sal_allowance" placeholder="Allowances (+)" value="0" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="number" id="sal_deduct" placeholder="Deductions (-)" value="0" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <button onclick="generateSalary()" class="btn-login" style="padding:10px; background: #2563eb;">Save Salary</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="config/firebase-config.js"></script>
+    
+    <script>
+        if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+        const db = firebase.database();
+
+        // Prompt for admin password (Simple protection)
+        const adminPass = prompt("Enter Admin Password (default: admin123)");
+        if (adminPass !== 'admin123') {
+            alert("Access Denied!");
+            window.location.href = 'index.html';
+        }
+
+        // Load employees for dropdown
+        db.ref('employees').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const select = document.getElementById('sal_emp');
+            select.innerHTML = '<option value="">Select Employee</option>';
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    select.innerHTML += `<option value="${data[key].uid}">${data[key].name} - ₹${data[key].basicSalary}</option>`;
+                });
+            }
+        });
+
+        async function addEmployee() {
+            const name = document.getElementById('emp_name').value;
+            const email = document.getElementById('emp_email').value;
+            const pass = document.getElementById('emp_pass').value;
+            const desig = document.getElementById('emp_desig').value;
+            const basic = document.getElementById('emp_basic').value;
+
+            if (!name || !email || !pass || !basic) return alert("Fill all fields");
+
+            try {
+                // API Call to Create Employee (Hashes password & saves)
+                const res = await fetch('/api/create-employee', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password: pass, designation: desig, basicSalary: basic })
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error);
+                alert("✅ Employee Added Successfully");
+                location.reload();
+            } catch (err) {
+                alert("❌ Error: " + err.message);
+            }
+        }
+
+        async function generateSalary() {
+            const uid = document.getElementById('sal_emp').value;
+            const month = document.getElementById('sal_month').value;
+            const allowance = parseFloat(document.getElementById('sal_allowance').value) || 0;
+            const deduct = parseFloat(document.getElementById('sal_deduct').value) || 0;
+
+            if (!uid || !month) return alert("Select employee and month");
+
+            db.ref('employees').once('value').then(snap => {
+                let basic = 0;
+                snap.forEach(child => { if(child.val().uid === uid) basic = child.val().basicSalary; });
+                
+                const net = basic + allowance - deduct;
+                
+                db.ref(`salary_records/${uid}/${month}`).set({
+                    month: month, basic, allowances: allowance, deductions: deduct, netSalary: net, status: 'Paid'
+                }).then(() => {
+                    alert("✅ Salary Generated!");
+                });
+            });
+        }
+    </script>
+</body>
+</html>
