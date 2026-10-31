@@ -1,1 +1,18 @@
-
+{
+  "name": "ess-portal",
+  "version": "1.0.0",
+  "description": "Employee Self Services Portal - DEV Vidyalaya",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
