@@ -2,6 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Employee Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -46,17 +47,18 @@
     <script src="config/firebase-config.js"></script>
     
     <script>
+        // Initialize Firebase
         if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
         const db = firebase.database();
 
-        // Prompt for admin password (Simple protection)
-        const adminPass = prompt("Enter Admin Password (default: admin123)");
-        if (adminPass !== 'admin123') {
-            alert("Access Denied!");
-            window.location.href = 'index.html';
+        // ✅ 1. Check if Admin is Logged In (Token Verification)
+        const token = localStorage.getItem('staff_token');
+        if (!token) {
+            alert("❌ Access Denied! Please login first.");
+            window.location.href = 'index.html'; // Redirect to login page
         }
 
-        // Load employees for dropdown
+        // 2. Load employees for dropdown (Auto updates when new employee added)
         db.ref('employees').on('value', (snapshot) => {
             const data = snapshot.val();
             const select = document.getElementById('sal_emp');
@@ -68,6 +70,7 @@
             }
         });
 
+        // 3. Add Employee Function
         async function addEmployee() {
             const name = document.getElementById('emp_name').value;
             const email = document.getElementById('emp_email').value;
@@ -75,44 +78,77 @@
             const desig = document.getElementById('emp_desig').value;
             const basic = document.getElementById('emp_basic').value;
 
-            if (!name || !email || !pass || !basic) return alert("Fill all fields");
+            if (!name || !email || !pass || !basic) {
+                return alert("⚠️ Please fill all required fields.");
+            }
 
             try {
-                // API Call to Create Employee (Hashes password & saves)
+                // ✅ API Call with Authorization Token
                 const res = await fetch('/api/create-employee', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token // Sending token to verify admin
+                    },
                     body: JSON.stringify({ name, email, password: pass, designation: desig, basicSalary: basic })
                 });
+                
                 const result = await res.json();
-                if (!res.ok) throw new Error(result.error);
+                
+                if (!res.ok) throw new Error(result.error || 'Failed to create employee');
+                
                 alert("✅ Employee Added Successfully");
-                location.reload();
+                
+                // Clear inputs
+                document.getElementById('emp_name').value = '';
+                document.getElementById('emp_email').value = '';
+                document.getElementById('emp_pass').value = '';
+                document.getElementById('emp_desig').value = '';
+                document.getElementById('emp_basic').value = '';
+                
             } catch (err) {
                 alert("❌ Error: " + err.message);
             }
         }
 
+        // 4. Generate Salary Function
         async function generateSalary() {
             const uid = document.getElementById('sal_emp').value;
             const month = document.getElementById('sal_month').value;
             const allowance = parseFloat(document.getElementById('sal_allowance').value) || 0;
             const deduct = parseFloat(document.getElementById('sal_deduct').value) || 0;
 
-            if (!uid || !month) return alert("Select employee and month");
+            if (!uid || !month) return alert("⚠️ Please select an employee and month.");
 
-            db.ref('employees').once('value').then(snap => {
+            try {
+                // Fetch basic salary of selected employee
+                const snap = await db.ref('employees').once('value');
                 let basic = 0;
-                snap.forEach(child => { if(child.val().uid === uid) basic = child.val().basicSalary; });
+                snap.forEach(child => { 
+                    if(child.val().uid === uid) basic = child.val().basicSalary; 
+                });
                 
                 const net = basic + allowance - deduct;
                 
-                db.ref(`salary_records/${uid}/${month}`).set({
-                    month: month, basic, allowances: allowance, deductions: deduct, netSalary: net, status: 'Paid'
-                }).then(() => {
-                    alert("✅ Salary Generated!");
+                // Save to Firebase
+                await db.ref(`salary_records/${uid}/${month}`).set({
+                    month: month, 
+                    basic: basic, 
+                    allowances: allowance, 
+                    deductions: deduct, 
+                    netSalary: net, 
+                    status: 'Paid'
                 });
-            });
+                
+                alert("✅ Salary Generated Successfully!");
+                
+                // Clear inputs
+                document.getElementById('sal_allowance').value = '0';
+                document.getElementById('sal_deduct').value = '0';
+                
+            } catch (err) {
+                alert("❌ Firebase Error: " + err.message);
+            }
         }
     </script>
 </body>
