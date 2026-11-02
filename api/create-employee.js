@@ -40,7 +40,9 @@ module.exports = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
-    const { name, email, password, designation, basicSalary, role } = req.body;
+    // ✅ FIX: Yahan empCode receive kiya gaya hai
+    const { name, email, password, designation, basicSalary, role, empCode } = req.body;
+    
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email and password required' });
     }
@@ -62,6 +64,7 @@ module.exports = async (req, res) => {
       designation: designation || 'Staff', 
       role: role || 'Employee', // Admin, Manager, Employee
       basicSalary: Number(basicSalary) || 0,
+      empCode: empCode || '', // ✅ FIX: empCode database mein save ho raha hai
       passwordHash: hash,
       status: 'approved', // Admin ne banaya hai, toh direct approved
       createdAt: Date.now()
