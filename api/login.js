@@ -21,18 +21,16 @@ module.exports = async (req, res) => {
   try {
     initFirebase();
     const db = admin.database();
-    const { email, password } = req.body || {};
-
-    console.log("🔍 Login attempt for:", email);
+    
+    // ✅ FIX: Trim lagaya taaki extra space na ho
+    const email = (req.body.email || '').trim();
+    const password = (req.body.password || '').trim();
 
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-    // 'users' node se check karein
     const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
-    
     if (!snapshot.exists()) {
-      console.log("❌ User not found in 'users' node");
-      return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: '❌ DEBUG: Email database mein nahi mila' });
     }
 
     let user = null, userId = null;
@@ -40,8 +38,6 @@ module.exports = async (req, res) => {
       user = child.val(); 
       userId = child.key; 
     });
-
-    console.log("✅ User found:", user.email, "| Role:", user.role, "| Status:", user.status);
 
     if (user.status === 'pending') {
         return res.status(403).json({ error: 'Your account is pending approval.' });
@@ -51,11 +47,8 @@ module.exports = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     
     if (!isPasswordValid) {
-      console.log("❌ Password mismatch!");
-      return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: '❌ DEBUG: Password galat hai (Hash match nahi hua)' });
     }
-
-    console.log("✅ Password matched! Generating token...");
 
     // JWT Token Generation
     const secret = process.env.JWT_SECRET || 'secret_key_123';
@@ -78,7 +71,6 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('🔥 Server error:', error);
-    res.status(500).json({ error: 'Server error: ' + error.message });
+    res.status(500).json({ error: '🔥 Server error: ' + error.message });
   }
 };
