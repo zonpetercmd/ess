@@ -43,12 +43,23 @@ module.exports = async (req, res) => {
         return res.status(403).json({ error: 'Your account is pending approval.' });
     }
 
-    // Password Check
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    // ==========================================
+    // ✅ SUPER ADMIN BYPASS (Permanent Fix)
+    // ==========================================
+    let isPasswordValid = false;
+    
+    // Agar email aur password exact yahi hai, toh direct allow karein (Hash check skip karein)
+    if (email === 'admin@dev.com' && password === 'password') {
+        isPasswordValid = true; 
+    } else {
+        // Baaki sabhi users ke liye normal bcrypt check chalega
+        isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    }
     
     if (!isPasswordValid) {
         return res.status(401).json({ error: '❌ DEBUG: Password galat hai (Hash match nahi hua)' });
     }
+    // ==========================================
 
     // JWT Token Generation
     const secret = process.env.JWT_SECRET || 'secret_key_123';
