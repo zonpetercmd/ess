@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Login - Employee Self Services</title>
+    <title>Login - DEV Vidyalaya ESS</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -16,25 +16,78 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <!-- Firebase Config -->
     <script src="config/firebase-config.js"></script>
+
+    <style>
+        .role-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 12px;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+        .role-btn.active {
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 <body>
 
     <div class="login-screen">
         <div class="login-card">
-            <!-- Agar aapke paas logo hai, to is img tag ko uncomment karein -->
-            <!-- <img src="logo.png" style="max-height: 60px; margin-bottom: 15px;" onerror="this.style.display='none'"> -->
+            <h2>DEV Vidyalaya</h2>
+            <p>Employee Self Services Portal</p>
             
-            <h2>Staff Portal</h2>
-            <p>Login to view your Salary & Pay Slips</p>
-            
+            <!-- ✅ NAYA: Role Selector -->
+            <div class="role-selector">
+                <button type="button" class="role-btn active" data-role="Admin" onclick="selectRole('Admin')">Admin</button>
+                <button type="button" class="role-btn" data-role="Manager" onclick="selectRole('Manager')">Manager</button>
+                <button type="button" class="role-btn" data-role="Employee" onclick="selectRole('Employee')">Employee</button>
+            </div>
+
             <div id="error_msg" style="color: #ef4444; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 600;"></div>
 
             <input type="email" id="email" placeholder="Email Address" autocomplete="username">
             <input type="password" id="password" placeholder="Password" autocomplete="current-password">
             
-            <button id="loginBtn" class="btn-login">Login</button>
+            <button id="loginBtn" class="btn-login">Login as Admin</button>
         </div>
     </div>
+
+    <script>
+        // ✅ Role Select karne ka logic
+        let selectedRole = 'Admin'; // Default
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // UI update karein
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.role-btn[data-role="${role}"]`).classList.add('active');
+            
+            // Button text update karein
+            document.getElementById('loginBtn').innerText = `Login as ${role}`;
+            
+            // Error message chhupayein
+            document.getElementById('error_msg').style.display = 'none';
+        }
+    </script>
 
     <!-- Login Logic -->
     <script src="js/auth.js"></script>
