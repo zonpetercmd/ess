@@ -3,153 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Employee Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Admin Portal - ESS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h2 style="font-size: 20px;">Admin Portal</h2>
-        <a href="index.html" style="text-decoration: none; color: #ef4444; font-weight: 600;">Back to Login</a>
+
+    <!-- HEADER -->
+    <header style="background: #111827; color: white; padding: 15px 5%;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h2 style="font-weight: 800; font-size: 20px; margin: 0;">Admin Portal</h2>
+            <span style="background: #374151; padding: 4px 10px; border-radius: 6px; font-size: 12px;">HRMS</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="admin_name" style="font-weight: 600; font-size: 14px;">Loading...</span>
+            <button onclick="logout()" class="btn-action" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">Logout</button>
+        </div>
     </header>
 
-    <div class="container">
-        <!-- Add Employee -->
-        <div class="card">
-            <h3>➕ Add New Employee</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                <input type="text" id="emp_name" placeholder="Full Name" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="email" id="emp_email" placeholder="Email ID" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="text" id="emp_pass" placeholder="Login Password" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="text" id="emp_desig" placeholder="Designation (e.g., Teacher)" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="number" id="emp_basic" placeholder="Basic Salary (₹)" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <button onclick="addEmployee()" class="btn-login" style="padding:10px;">Create Employee</button>
+    <div class="container" style="margin-top: 30px;">
+        
+        <!-- STATS ROW -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px; border-left: 5px solid #2563eb;">
+                <div style="background: #dbeafe; color: #2563eb; padding: 15px; border-radius: 50%; font-size: 24px;"><i class="fas fa-users"></i></div>
+                <div>
+                    <h4 style="margin: 0; color: #64748b; font-size: 13px;">Total Employees</h4>
+                    <h2 style="margin: 0; font-size: 24px;" id="total_emp">0</h2>
+                </div>
+            </div>
+            <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px; border-left: 5px solid #10b981;">
+                <div style="background: #d1fae5; color: #10b981; padding: 15px; border-radius: 50%; font-size: 24px;"><i class="fas fa-user-check"></i></div>
+                <div>
+                    <h4 style="margin: 0; color: #64748b; font-size: 13px;">Approved</h4>
+                    <h2 style="margin: 0; font-size: 24px;" id="approved_emp">0</h2>
+                </div>
+            </div>
+            <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px; border-left: 5px solid #f59e0b;">
+                <div style="background: #fef3c7; color: #f59e0b; padding: 15px; border-radius: 50%; font-size: 24px;"><i class="fas fa-clock"></i></div>
+                <div>
+                    <h4 style="margin: 0; color: #64748b; font-size: 13px;">Pending Requests</h4>
+                    <h2 style="margin: 0; font-size: 24px;" id="pending_emp">0</h2>
+                </div>
             </div>
         </div>
 
-        <!-- Generate Salary -->
+        <!-- ADD EMPLOYEE FORM -->
         <div class="card">
-            <h3>💰 Generate Salary</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                <select id="sal_emp" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                    <option value="">Select Employee</option>
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><i class="fas fa-user-plus" style="color: #2563eb;"></i> Add New Employee</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <input type="text" id="emp_name" placeholder="Full Name" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                <input type="email" id="emp_email" placeholder="Email Address" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                <input type="text" id="emp_pass" placeholder="Login Password" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                <input type="text" id="emp_desig" placeholder="Designation (e.g., Teacher)" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                <input type="number" id="emp_basic" placeholder="Basic Salary (₹)" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                <select id="emp_role" style="padding:12px; border:1px solid #ccc; border-radius:8px;">
+                    <option value="Employee">Role: Employee</option>
+                    <option value="Manager">Role: Manager / HR</option>
+                    <option value="Admin">Role: Admin</option>
                 </select>
-                <input type="month" id="sal_month" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="number" id="sal_allowance" placeholder="Allowances (+)" value="0" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <input type="number" id="sal_deduct" placeholder="Deductions (-)" value="0" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
-                <button onclick="generateSalary()" class="btn-login" style="padding:10px; background: #2563eb;">Save Salary</button>
+            </div>
+            <button onclick="addEmployee()" class="btn-login" style="margin-top: 20px; width: auto; padding: 12px 30px; background: #2563eb;">
+                <i class="fas fa-check"></i> Create Employee
+            </button>
+        </div>
+
+        <!-- EMPLOYEE LIST -->
+        <div class="card">
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><i class="fas fa-list" style="color: #2563eb;"></i> Employee Directory</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee_list">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">Loading employees...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="config/firebase-config.js"></script>
     
-    <script>
-        // Initialize Firebase
-        if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
-        const db = firebase.database();
-
-        // ✅ 1. Check if Admin is Logged In (Token Verification)
-        const token = localStorage.getItem('staff_token');
-        if (!token) {
-            alert("❌ Access Denied! Please login first.");
-            window.location.href = 'index.html'; // Redirect to login page
-        }
-
-        // 2. Load employees for dropdown (Auto updates when new employee added)
-        db.ref('employees').on('value', (snapshot) => {
-            const data = snapshot.val();
-            const select = document.getElementById('sal_emp');
-            select.innerHTML = '<option value="">Select Employee</option>';
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    select.innerHTML += `<option value="${data[key].uid}">${data[key].name} - ₹${data[key].basicSalary}</option>`;
-                });
-            }
-        });
-
-        // 3. Add Employee Function
-        async function addEmployee() {
-            const name = document.getElementById('emp_name').value;
-            const email = document.getElementById('emp_email').value;
-            const pass = document.getElementById('emp_pass').value;
-            const desig = document.getElementById('emp_desig').value;
-            const basic = document.getElementById('emp_basic').value;
-
-            if (!name || !email || !pass || !basic) {
-                return alert("⚠️ Please fill all required fields.");
-            }
-
-            try {
-                // ✅ API Call with Authorization Token
-                const res = await fetch('/api/create-employee', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token // Sending token to verify admin
-                    },
-                    body: JSON.stringify({ name, email, password: pass, designation: desig, basicSalary: basic })
-                });
-                
-                const result = await res.json();
-                
-                if (!res.ok) throw new Error(result.error || 'Failed to create employee');
-                
-                alert("✅ Employee Added Successfully");
-                
-                // Clear inputs
-                document.getElementById('emp_name').value = '';
-                document.getElementById('emp_email').value = '';
-                document.getElementById('emp_pass').value = '';
-                document.getElementById('emp_desig').value = '';
-                document.getElementById('emp_basic').value = '';
-                
-            } catch (err) {
-                alert("❌ Error: " + err.message);
-            }
-        }
-
-        // 4. Generate Salary Function
-        async function generateSalary() {
-            const uid = document.getElementById('sal_emp').value;
-            const month = document.getElementById('sal_month').value;
-            const allowance = parseFloat(document.getElementById('sal_allowance').value) || 0;
-            const deduct = parseFloat(document.getElementById('sal_deduct').value) || 0;
-
-            if (!uid || !month) return alert("⚠️ Please select an employee and month.");
-
-            try {
-                // Fetch basic salary of selected employee
-                const snap = await db.ref('employees').once('value');
-                let basic = 0;
-                snap.forEach(child => { 
-                    if(child.val().uid === uid) basic = child.val().basicSalary; 
-                });
-                
-                const net = basic + allowance - deduct;
-                
-                // Save to Firebase
-                await db.ref(`salary_records/${uid}/${month}`).set({
-                    month: month, 
-                    basic: basic, 
-                    allowances: allowance, 
-                    deductions: deduct, 
-                    netSalary: net, 
-                    status: 'Paid'
-                });
-                
-                alert("✅ Salary Generated Successfully!");
-                
-                // Clear inputs
-                document.getElementById('sal_allowance').value = '0';
-                document.getElementById('sal_deduct').value = '0';
-                
-            } catch (err) {
-                alert("❌ Firebase Error: " + err.message);
-            }
-        }
-    </script>
+    <!-- Admin Logic -->
+    <script src="js/admin.js"></script>
 </body>
 </html>
