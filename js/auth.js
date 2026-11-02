@@ -10,6 +10,8 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         return;
     }
 
+    // Button loading state
+    const originalText = btn.innerText;
     btn.innerText = "⏳ Logging in...";
     btn.disabled = true;
     errorDiv.style.display = 'none';
@@ -27,7 +29,15 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             throw new Error(data.error || 'Login failed');
         }
 
-        // Save Token and Data
+        // ✅ NAYA: Selected Role aur Backend Role match karein
+        // Agar user ne Admin select kiya hai, par uska account Employee ka hai, toh use rok dein
+        if (selectedRole !== data.user.role) {
+            // Exception: Manager aur Admin ko ek dusre ka access de sakte hain agar zarurat ho, 
+            // par abhi ke liye strict check lagate hain.
+            throw new Error(`Access Denied! You are registered as a ${data.user.role}, not ${selectedRole}.`);
+        }
+
+        // Token aur Data save karein
         localStorage.setItem('staff_token', data.token);
         localStorage.setItem('staff_data', JSON.stringify(data.user));
 
@@ -41,7 +51,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     } catch (error) {
         errorDiv.innerText = error.message;
         errorDiv.style.display = 'block';
-        btn.innerText = "Login";
+        btn.innerText = originalText;
         btn.disabled = false;
     }
 });
